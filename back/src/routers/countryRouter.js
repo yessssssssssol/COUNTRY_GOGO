@@ -1,11 +1,13 @@
 const { Router } = require("express");
 const { countryService } = require("../services/countryService.js");
+const { surveyService } = require("../services/surveyService.js");
+const { rankService } = require("../services/rankService");
 const countryRouter = Router();
 
 /**
  * @swagger
  * paths:
- *  /country/all
+ *  /country/all:
  *    get:
  *      summary: Get data
  *      tags: [Country]
@@ -30,7 +32,7 @@ countryRouter.get("/all", async (req, res, next) => {
 /**
  * @swagger
  * paths:
- *  /country/one/:City
+ *  /country/one/:City:
  *    get:
  *      summary: Get one data
  *      tags: [Country]
@@ -46,7 +48,6 @@ countryRouter.get("/all", async (req, res, next) => {
 countryRouter.get("/one/:City", async (req, res, next) => {
   try {
     const City = req.params.City;
-    console.log(City);
     const data = await countryService.getOne(City);
 
     res.status(200).json(data);
@@ -58,7 +59,7 @@ countryRouter.get("/one/:City", async (req, res, next) => {
 /**
  * @swagger
  * paths:
- *  /country/rank/:Country
+ *  /country/rank/:Country:
  *    get:
  *      summary: Get rank
  *      tags: [Country]
@@ -69,13 +70,25 @@ countryRouter.get("/one/:City", async (req, res, next) => {
  *            application/json:
  *                schemas:
  */
+//rankRouter에 /one 주소랑 중복기능
 countryRouter.get("/rank/:Country", async (req, res, next) => {
   try {
     const Country = req.params.Country;
-    console.log(Country);
-    const data = await countryService.getRank(Country);
+    const data = await rankService.getOne(Country);
 
     res.status(200).json(data);
+  } catch (error) {
+    next(error);
+  }
+});
+
+countryRouter.post("/sort", async (req, res, next) => {
+  try {
+    const { id, temp, answer } = req.body;
+    const result = await surveyService.addSurvey({ id, temp, answer });
+
+    res.header("Content-Type: application/json");
+    res.status(201).json(result);
   } catch (error) {
     next(error);
   }
@@ -84,37 +97,26 @@ countryRouter.get("/rank/:Country", async (req, res, next) => {
 /**
  * @swagger
  * paths:
- *  /country/sort/:columns
+ *  /country/sort/:id:
  *    get:
- *      summary: Get sorted data(by columns)
+ *      summary: Get sorted data(by id)
  *      tags: [Country]
  *      responses:
  *        "200":
- *          description: Get sorted data(by columns)
+ *          description: Get sorted data(by id)
  *          content:
  *            application/json:
  *              schema:
  *                $ref: '#/components/schemas/Country'
  */
-// 개발용 path ('/sort'로 변경 예정, columns는 req.body로 넘겨받는다.)
-countryRouter.get("/sort/:columns", async (req, res, next) => {
+countryRouter.get("/sort/:id", async (req, res, next) => {
   try {
-    // const columns = req.body; (@권민님)
-    const columns = req.params.columns;
-    const countryData = req.cookies.countryData ?? 0;
-    let data;
+    const id = req.params.id;
+    const survey = await surveyService.getSurvey({ id });
+    const { temp, answer } = survey;
+    const data = await countryService.sortData({ temp, answer });
 
-    if (countryData === 0) {
-      data = await countryService.sortData(columns);
-      res.cookie(
-        'countryData',
-        data,
-        { maxAge: 3600 }
-      );
-    } else {
-      data = { ...countryData };
-    }
-
+    res.cookie("countryData", data, { maxAge: 3600000 });
     res.status(200).json(data);
   } catch (error) {
     next(error);
