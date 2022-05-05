@@ -86,11 +86,10 @@ countryRouter.post("/sort", async (req, res, next) => {
   try {
     res.header("Content-Type: application/json");
 
-    const id = req.body.id;
     const temp = req.body.temp;
     const answer = req.body.answer;
 
-    const result = await surveyService.addSurvey({ id, temp, answer });
+    const result = await surveyService.addSurvey({ temp, answer });
     if (answer.errorMessage) {
       throw new Error(result.errorMessage);
     }
@@ -118,14 +117,13 @@ countryRouter.post("/sort", async (req, res, next) => {
  */
 
 // 개발용 path ('/sort'로 변경 예정, answer는 req.body로 넘겨받는다.)
-countryRouter.get("/sort/:id", async (req, res, next) => {
+countryRouter.get("/sort", async (req, res, next) => {
   try {
-    const id = req.params.id;
-    let survey = await surveyService.getSurvey({ id });
+    // // const answer = req.body; (@권민님)
+    let survey = await surveyService.getSurvey();
 
     const temp = survey.temp;
     const answer = survey.answer;
-
     const countryData = req.cookies.countryData ?? 0;
     let data;
 

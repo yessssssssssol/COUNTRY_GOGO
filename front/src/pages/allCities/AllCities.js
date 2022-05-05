@@ -1,7 +1,23 @@
-import React, { useEffect, useState } from 'react';
-import ResultModal from './ResultModal';
-import * as Api from '../../api';
-import './style.css';
+import React, { useEffect, useState } from "react";
+import ResultModal from "./ResultModal";
+import * as Api from "../../api";
+import "./style.css";
+
+const useClickBtn = () => {
+  const [title, setTitle] = useState("행복지수");
+  const [select, setSelect] = useState("score");
+  const [offset, setOffset] = useState(12);
+  const [sort, setSort] = useState([]); // 결과 저장
+
+  const handleClick = (e) => {
+    setSelect(e.target.value);
+    setTitle(e.target.name);
+    setSort([]);
+    setOffset(12);
+  };
+
+  return { title, select, offset, sort, setSort, setOffset, handleClick };
+};
 
 const useClickBtn = () => {
   const [title, setTitle] = useState('행복지수');
@@ -20,13 +36,13 @@ const useClickBtn = () => {
 };
 
 const HPI = [
-  { value: 'socialSupport', name: '사회복지' },
-  { value: 'corruption', name: '청렴도' },
-  { value: 'Freedom', name: '자유' },
-  { value: 'price', name: '물가' },
-  { value: 'GDP', name: 'GDP' },
-  { value: 'Generosity', name: '관대함' },
-  { value: 'HLE', name: '기대수명' },
+  { value: "socialSupport", name: "사회복지" },
+  { value: "corruption", name: "청렴도" },
+  { value: "Freedom", name: "자유" },
+  { value: "price", name: "물가" },
+  { value: "GDP", name: "GDP" },
+  { value: "Generosity", name: "관대함" },
+  { value: "HLE", name: "기대수명" },
 ];
 
 const AllCities = () => {
@@ -36,9 +52,9 @@ const AllCities = () => {
     useClickBtn();
 
   useEffect(() => {
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener("scroll", handleScroll);
     return () => {
-      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener("scroll", handleScroll);
     };
   }, []);
 
@@ -62,7 +78,7 @@ const AllCities = () => {
         const result = res.data;
         setSort([...sort, ...result]);
       } catch {
-        console.log('error');
+        console.log("error");
       }
     }
   };
